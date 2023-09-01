@@ -1,0 +1,70 @@
+# code: language=ansible
+---
+# Main tasks file for role
+- name: Setting OS variables
+  ansible.builtin.include_vars: "{{ lookup('ansible.builtin.first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_facts.os_family }}.yml"
+        - default.yml
+      paths:
+        - vars/os_family
+
+- name: Set fish_users_with_defaults
+  ansible.builtin.set_fact:
+    fish_users_with_defaults: >-
+      {{
+          fish_users_with_defaults | default([]) |
+          union( [fish_user_defaults | ansible.builtin.combine(user)] )
+      }}
+  loop: '{{ fish.users }}'
+  loop_control:
+    loop_var: user
+    label: '{{ user.name }}'
+
+- name: Set fish_with_default_users
+  ansible.builtin.set_fact:
+    fish_with_default_users:
+      users: '{{ fish_users_with_defaults }}'
+
+- name: Set fish_config
+  ansible.builtin.set_fact:
+    fish_config: >-
+      {{ fish_defaults |
+        ansible.builtin.combine( fish | default(fish_defaults) ) |
+        ansible.builtin.combine( fish_with_default_users )
+      }}
+
+- name: Print fish_config dictionary if debug flag is set
+  ansible.builtin.debug:
+    var: fish_config
+  when: fish_config.debug
+
+# Setup package
+- name: 'Setup | package {{ fish_config.package_name }}'
+  ansible.builtin.package:
+    name: '{{ fish_config.package_name }}'
+    state: '{{ fish_config.state }}'
+
+- name: 'Add user | include task > add-user.yml'
+  ansible.builtin.include_tasks:
+    file: add-user.yml
+  vars:
+    username: '{{ user.name }}'
+  when: user.state == 'present' and user.manage
+  loop: "{{ fish_config.users | flatten(levels=1) }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.name }}"
+
+- name: 'Remove user | include task > remove-user.yml'
+  ansible.builtin.include_tasks:
+    file: remove-user.yml
+  vars:
+    username: '{{ user.name }}'
+  when: user.state == 'absent' and user.manage
+  loop: "{{ fish_config.users | flatten(levels=1) }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.name }}"

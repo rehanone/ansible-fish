@@ -1,0 +1,13 @@
+# code: language=ansible
+---
+# Defaults for user
+fish_user_defaults:
+  manage: true
+  state: present
+
+# Defaults dictionary for fish role
+fish_defaults:
+  debug: '{{ fish_debug }}'
+  state: '{{ fish_state }}'
+  package_name: '{{ fish_package_name }}'
+  users: []

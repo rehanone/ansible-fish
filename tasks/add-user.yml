@@ -1,0 +1,16 @@
+# code: language=ansible
+---
+- name: Determine fish shell executable location
+  ansible.builtin.command:
+    cmd: 'which fish'
+  changed_when: false
+  register: bin_location
+
+- name: Set fish_binary_location
+  ansible.builtin.set_fact:
+    fish_binary_location: '{{ bin_location.stdout | default(fish_shell_path_fish) | string }}'
+
+- name: Change default shell to fish for user {{ username }}'
+  ansible.builtin.user:
+    name: '{{ username }}'
+    shell: '{{ fish_binary_location }}'

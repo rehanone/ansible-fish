@@ -1,0 +1,17 @@
+# code: language=ansible
+---
+- name: Determine bash shell executable location
+  ansible.builtin.command:
+    cmd: 'which bash'
+  changed_when: false
+  register: bin_location
+
+- name: Set bash_binary_location
+  ansible.builtin.set_fact:
+    bash_binary_location: '{{ bin_location.stdout | default(fish_shell_path_bash) | string }}'
+
+# --- Set the shell back to bash ---
+- name: Change default shell to bash for user {{ username }}'
+  ansible.builtin.user:
+    name: '{{ username }}'
+    shell: '{{ bash_binary_location }}'

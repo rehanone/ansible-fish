@@ -1,0 +1,4 @@
+# code: language=ansible
+---
+- name: Main fish tasks
+  ansible.builtin.include_tasks: fish.yml
