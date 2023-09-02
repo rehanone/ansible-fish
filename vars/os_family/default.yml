@@ -1,0 +1,4 @@
+# code: language=ansible
+---
+# The os specific package name used to install fish
+fish_package_name: fish

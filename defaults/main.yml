@@ -1,0 +1,14 @@
+# code: language=ansible
+---
+# Allows logging of the final configuration dictionary with all defaulted values which can be helpful for debugging
+# Default value for debug is false
+fish_debug: false
+
+# Whether or not to install or remove fish
+# choices: [ present, absent ]
+# default: present
+fish_state: present
+
+fish_shell_path_bash: '/usr/bin/bash'
+
+fish_shell_path_fish: '/usr/bin/fish'
